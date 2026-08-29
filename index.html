@@ -1,0 +1,206 @@
+<title>Northwind Portal</title>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&family=IBM+Plex+Mono:wght@400;500&display=swap">
+<style>
+  :root {
+    --bg: #eef1f6;
+    --panel: #ffffff;
+    --ink: #1c2333;
+    --muted: #5b6577;
+    --line: #dde2eb;
+    --accent: #3b5bdb;
+    --accent-ink: #ffffff;
+    --log-bg: #10131c;
+    --log-ink: #d7ddea;
+    --log-dim: #6b7488;
+    --log-hit: #7ee787;
+  }
+  @media (prefers-color-scheme: dark) {
+    :root:not([data-theme="light"]) {
+      --bg: #0f1220;
+      --panel: #171b2c;
+      --ink: #e7eaf3;
+      --muted: #9aa3ba;
+      --line: #2a3049;
+      --accent: #6c8cff;
+      --accent-ink: #0b1020;
+      --log-bg: #05070d;
+      --log-ink: #d7ddea;
+      --log-dim: #545c72;
+      --log-hit: #7ee787;
+    }
+  }
+  :root[data-theme="dark"] {
+    --bg: #0f1220;
+    --panel: #171b2c;
+    --ink: #e7eaf3;
+    --muted: #9aa3ba;
+    --line: #2a3049;
+    --accent: #6c8cff;
+    --accent-ink: #0b1020;
+    --log-bg: #05070d;
+    --log-ink: #d7ddea;
+    --log-dim: #545c72;
+    --log-hit: #7ee787;
+  }
+  * { box-sizing: border-box; }
+  body {
+    margin: 0;
+    background: var(--bg);
+    color: var(--ink);
+    font-family: "Inter", system-ui, sans-serif;
+    min-height: 100vh;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 2rem;
+    padding: 3rem 1.5rem 4rem;
+  }
+  .brand {
+    display: flex;
+    align-items: center;
+    gap: .6rem;
+    font-weight: 600;
+    font-size: 1.05rem;
+    letter-spacing: .01em;
+  }
+  .brand .mark {
+    width: 1.6rem; height: 1.6rem; border-radius: .4rem;
+    background: linear-gradient(135deg, var(--accent), #8fa4ff);
+    flex: none;
+  }
+  .card {
+    background: var(--panel);
+    border: 1px solid var(--line);
+    border-radius: 14px;
+    padding: 2.25rem 2.25rem 2rem;
+    width: 100%;
+    max-width: 23rem;
+    box-shadow: 0 1px 2px rgba(15,18,32,.04), 0 12px 32px -18px rgba(15,18,32,.25);
+  }
+  .card h1 { font-size: 1.25rem; margin: 0 0 .3rem; text-wrap: balance; }
+  .card p.sub { margin: 0 0 1.5rem; color: var(--muted); font-size: .9rem; }
+  label { display: block; font-size: .8rem; font-weight: 500; margin-bottom: .35rem; color: var(--muted); }
+  .field { margin-bottom: 1.1rem; }
+  input {
+    width: 100%; font: inherit; font-size: .95rem;
+    padding: .65rem .75rem; border-radius: 8px;
+    border: 1px solid var(--line); background: var(--bg); color: var(--ink);
+  }
+  input:focus { outline: 2px solid var(--accent); outline-offset: 1px; }
+  button {
+    width: 100%; margin-top: .4rem; padding: .7rem .75rem;
+    border-radius: 8px; border: none; background: var(--accent); color: var(--accent-ink);
+    font: inherit; font-weight: 600; font-size: .95rem; cursor: pointer;
+  }
+  button:focus-visible { outline: 2px solid var(--ink); outline-offset: 2px; }
+  .foot { margin-top: 1.1rem; text-align: center; font-size: .82rem; color: var(--muted); }
+
+  .console {
+    width: 100%; max-width: 44rem;
+    background: var(--log-bg); color: var(--log-ink);
+    border-radius: 12px; padding: 1rem 1.1rem;
+    font-family: "IBM Plex Mono", ui-monospace, monospace;
+    font-size: .78rem; line-height: 1.55;
+  }
+  .console .head {
+    display: flex; justify-content: space-between; color: var(--log-dim);
+    text-transform: uppercase; letter-spacing: .08em; font-size: .68rem;
+    margin-bottom: .6rem;
+  }
+  .console pre { margin: 0; white-space: pre-wrap; word-break: break-word; }
+  .console .hit { color: var(--log-hit); }
+</style>
+
+<div class="brand"><span class="mark"></span>Northwind Portal</div>
+
+<form class="card" id="login" autocomplete="on">
+  <h1>Sign in</h1>
+  <p class="sub">Use your Northwind account to continue.</p>
+  <div class="field">
+    <label for="u">Email or username</label>
+    <input id="u" name="username" type="text" autocomplete="username" placeholder="you@northwind.example">
+  </div>
+  <div class="field">
+    <label for="p">Password</label>
+    <input id="p" name="password" type="password" autocomplete="current-password" placeholder="••••••••">
+  </div>
+  <button type="submit">Sign in</button>
+  <p class="foot">Trouble signing in? Contact IT support.</p>
+</form>
+
+<div class="console">
+  <div class="head"><span>diagnostic log</span><span id="clock">t+0.0s</span></div>
+  <pre id="log">waiting…</pre>
+</div>
+
+<script>
+"use strict";
+const t0 = performance.now();
+const lines = [];
+const seen = new Set();
+function log(msg, hit) {
+  const t = ((performance.now() - t0) / 1000).toFixed(1);
+  const line = `[t+${t}s] ${msg}`;
+  if (seen.has(line)) return;
+  seen.add(line);
+  lines.push(hit ? {text: line, hit: true} : {text: line, hit: false});
+  render();
+}
+function render() {
+  const el = document.getElementById("log");
+  el.innerHTML = lines.map(l => l.hit ? `<span class="hit">${escapeHtml(l.text)}</span>` : escapeHtml(l.text)).join("\n");
+  document.getElementById("clock").textContent = "t+" + ((performance.now() - t0) / 1000).toFixed(1) + "s";
+}
+function escapeHtml(s) {
+  return s.replace(/[&<>]/g, c => ({"&": "&amp;", "<": "&lt;", ">": "&gt;"}[c]));
+}
+
+log("page loaded, origin=" + location.origin);
+
+// Watch for value changes on the credential fields (autofill / extension writes).
+const userField = document.getElementById("u");
+const passField = document.getElementById("p");
+for (const [name, field] of [["username", userField], ["password", passField]]) {
+  let last = field.value;
+  field.addEventListener("input", () => log(`input event on ${name}: ${JSON.stringify(field.value)}`, true));
+  field.addEventListener("change", () => log(`change event on ${name}: ${JSON.stringify(field.value)}`, true));
+  field.addEventListener("animationstart", e => log(`animationstart on ${name} (${e.animationName}) — likely autofill`, true));
+  setInterval(() => {
+    if (field.value !== last) {
+      last = field.value;
+      log(`polled value change on ${name}: ${JSON.stringify(field.value)}`, true);
+    }
+  }, 150);
+}
+
+// Watch for extensions injecting elements (autofill dropdowns, shadow hosts, etc).
+new MutationObserver(records => {
+  for (const r of records) {
+    for (const node of r.addedNodes) {
+      if (node.nodeType === 1) {
+        log(`DOM insert: <${node.tagName.toLowerCase()}>` + (node.id ? `#${node.id}` : "") + (node.className ? `.${String(node.className).replace(/\s+/g, ".")}` : ""), true);
+      }
+    }
+    if (r.type === "attributes") {
+      log(`attribute change on <${r.target.tagName ? r.target.tagName.toLowerCase() : "?"}> ${r.attributeName}`, true);
+    }
+  }
+}).observe(document.documentElement, {childList: true, subtree: true, attributes: true});
+
+// Cross-context messages (extension content scripts often relay via postMessage).
+window.addEventListener("message", event => {
+  log(`postMessage from ${event.origin}: ${JSON.stringify(event.data).slice(0, 200)}`, true);
+});
+
+// Any uncaught script errors (e.g. an injected content script throwing).
+window.addEventListener("error", event => {
+  log(`window error: ${event.message} (${event.filename}:${event.lineno})`, true);
+});
+
+document.getElementById("login").addEventListener("submit", event => {
+  event.preventDefault();
+  log(`form submit — username=${JSON.stringify(userField.value)} password=${JSON.stringify(passField.value)}`, true);
+});
+
+setInterval(render, 1000);
+</script>
