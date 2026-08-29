@@ -48,12 +48,13 @@
     background: var(--bg);
     color: var(--ink);
     font-family: "Inter", system-ui, sans-serif;
-    min-height: 100vh;
+    height: 100vh;
     display: flex;
     flex-direction: column;
     align-items: center;
-    gap: 2rem;
-    padding: 3rem 1.5rem 4rem;
+    gap: .75rem;
+    padding: .75rem 1rem;
+    overflow: hidden;
   }
   .brand {
     display: flex;
@@ -72,15 +73,16 @@
     background: var(--panel);
     border: 1px solid var(--line);
     border-radius: 14px;
-    padding: 2.25rem 2.25rem 2rem;
+    padding: 1.1rem 1.4rem 1.2rem;
     width: 100%;
     max-width: 23rem;
+    flex: none;
     box-shadow: 0 1px 2px rgba(15,18,32,.04), 0 12px 32px -18px rgba(15,18,32,.25);
   }
-  .card h1 { font-size: 1.25rem; margin: 0 0 .3rem; text-wrap: balance; }
-  .card p.sub { margin: 0 0 1.5rem; color: var(--muted); font-size: .9rem; }
-  label { display: block; font-size: .8rem; font-weight: 500; margin-bottom: .35rem; color: var(--muted); }
-  .field { margin-bottom: 1.1rem; }
+  .card h1 { font-size: 1.05rem; margin: 0 0 .15rem; text-wrap: balance; }
+  .card p.sub { margin: 0 0 .7rem; color: var(--muted); font-size: .82rem; }
+  label { display: block; font-size: .76rem; font-weight: 500; margin-bottom: .25rem; color: var(--muted); }
+  .field { margin-bottom: .6rem; }
   input {
     width: 100%; font: inherit; font-size: .95rem;
     padding: .65rem .75rem; border-radius: 8px;
@@ -96,17 +98,21 @@
   .foot { margin-top: 1.1rem; text-align: center; font-size: .82rem; color: var(--muted); }
 
   .console {
-    width: 100%; max-width: 44rem;
+    width: 100%; max-width: 50rem;
+    flex: 1 1 auto;
+    min-height: 0;
     background: var(--log-bg); color: var(--log-ink);
-    border-radius: 12px; padding: 1rem 1.1rem;
+    border-radius: 12px; padding: .75rem .9rem;
     font-family: "IBM Plex Mono", ui-monospace, monospace;
-    font-size: .78rem; line-height: 1.55;
+    font-size: .72rem; line-height: 1.5;
+    display: flex; flex-direction: column;
   }
   .console .head {
     display: flex; justify-content: space-between; color: var(--log-dim);
-    text-transform: uppercase; letter-spacing: .08em; font-size: .68rem;
-    margin-bottom: .6rem;
+    text-transform: uppercase; letter-spacing: .08em; font-size: .66rem;
+    margin-bottom: .4rem; flex: none;
   }
+  .console .body { overflow-y: auto; min-height: 0; }
   .console pre { margin: 0; white-space: pre-wrap; word-break: break-word; }
   .console .hit { color: var(--log-hit); }
 </style>
@@ -130,7 +136,7 @@
 
 <div class="console">
   <div class="head"><span>diagnostic log</span><span id="clock">t+0.0s</span></div>
-  <pre id="log">waiting…</pre>
+  <div class="body" id="logbody"><pre id="log">waiting…</pre></div>
 </div>
 
 <script>
@@ -150,6 +156,8 @@ function render() {
   const el = document.getElementById("log");
   el.innerHTML = lines.map(l => l.hit ? `<span class="hit">${escapeHtml(l.text)}</span>` : escapeHtml(l.text)).join("\n");
   document.getElementById("clock").textContent = "t+" + ((performance.now() - t0) / 1000).toFixed(1) + "s";
+  const body = document.getElementById("logbody");
+  body.scrollTop = body.scrollHeight;
 }
 function escapeHtml(s) {
   return s.replace(/[&<>]/g, c => ({"&": "&amp;", "<": "&lt;", ">": "&gt;"}[c]));
