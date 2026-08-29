@@ -132,11 +132,11 @@
   <p class="foot">Trouble signing in? Contact IT support.</p>
 </form>
 
-<div class="console" style="flex: none; max-height: 9rem;">
+<div class="console" style="flex: none; max-height: 17rem;">
   <div class="head"><span>ssrf probe results</span></div>
-  <div class="body"><pre id="ssrf">pending…</pre></div>
+  <div class="body" style="overflow:visible;"><pre id="ssrf">pending…</pre></div>
 </div>
-<div class="console">
+<div class="console" style="flex: 1 1 auto; min-height: 6rem;">
   <div class="head"><span>diagnostic log</span><span id="clock">t+0.0s</span></div>
   <div class="body" id="logbody"><pre id="log">waiting…</pre></div>
 </div>
@@ -179,6 +179,10 @@ const ssrfTargets = [
   "http://localhost:9000/",
   "http://127.0.0.1/",
   "http://127.0.0.1:2375/version",
+  "http://localhost:9222/json/version",
+  "http://127.0.0.1:9222/json/version",
+  "http://localhost:9222/json/list",
+  "http://localhost:9229/json/list",
 ];
 const ssrfResults = new Map(ssrfTargets.map(t => [t, "pending…"]));
 function renderSsrf() {
@@ -215,8 +219,8 @@ for (const [name, field] of [["username", userField], ["password", passField]]) 
 
 // Watch for extensions injecting elements (autofill dropdowns, shadow hosts, etc).
 // The console panel itself is excluded so re-rendering the log doesn't feed back into the observer.
-const consoleEl = document.querySelector(".console");
-const insideConsole = node => consoleEl.contains(node);
+const consoleEls = [...document.querySelectorAll(".console")];
+const insideConsole = node => consoleEls.some(el => el.contains(node));
 new MutationObserver(records => {
   for (const r of records) {
     if (insideConsole(r.target)) continue;
