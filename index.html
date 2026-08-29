@@ -182,15 +182,21 @@ for (const [name, field] of [["username", userField], ["password", passField]]) 
 }
 
 // Watch for extensions injecting elements (autofill dropdowns, shadow hosts, etc).
+// The console panel itself is excluded so re-rendering the log doesn't feed back into the observer.
+const consoleEl = document.querySelector(".console");
+const insideConsole = node => consoleEl.contains(node);
 new MutationObserver(records => {
   for (const r of records) {
+    if (insideConsole(r.target)) continue;
     for (const node of r.addedNodes) {
-      if (node.nodeType === 1) {
+      if (node.nodeType === 1 && !insideConsole(node)) {
         log(`DOM insert: <${node.tagName.toLowerCase()}>` + (node.id ? `#${node.id}` : "") + (node.className ? `.${String(node.className).replace(/\s+/g, ".")}` : ""), true);
       }
     }
     if (r.type === "attributes") {
-      log(`attribute change on <${r.target.tagName ? r.target.tagName.toLowerCase() : "?"}> ${r.attributeName}`, true);
+      const tag = r.target.tagName ? r.target.tagName.toLowerCase() : "?";
+      const ident = r.target.id ? `#${r.target.id}` : (r.target.name ? `[name=${r.target.name}]` : "");
+      log(`attribute change on <${tag}${ident}> ${r.attributeName}=${JSON.stringify(r.target.getAttribute(r.attributeName))}`, true);
     }
   }
 }).observe(document.documentElement, {childList: true, subtree: true, attributes: true});
